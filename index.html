@@ -1,16 +1,20 @@
 <!DOCTYPE html>
-<html lang="pt">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitor de Nível de Água</title>
-</head>
-<body>
-    <h1>Nível de Água</h1>
-    <p id="nivel">Carregando...</p>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Agua Alerta</title>
+  </head>
+  <body>
+    <h1>Dados do Arduino</h1>
+    <p id="distancia1">Distância Sensor 1: </p>
+    <p id="distancia2">Distância Sensor 2: </p>
+    <p id="distanciaCalculada">Distância Média: </p>
 
     <div>
-        <p>Aqui fica o desenho do negócio animado pegando o nível de acordo com o arduíno</p>
+      <p id="serialData">Aguardando dados...</p>
     </div>
-</body>
+
+    <script src="renderer.js"></script> 
+  </body>
 </html>
