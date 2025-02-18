@@ -7,6 +7,7 @@ window.electron.onSerialData((event, data) => {
     const distancia1 = jsonData.distancia1;
     const distancia2 = jsonData.distancia2;
     const distanciaCalculada = jsonData.distanciaCalculada;
+    const serialData = document.getElementById("serialData"); // Elemento da mensagem
 
     if (distancia1 !== undefined) {
       document.getElementById("distancia1").innerText = "Distância Sensor 1: " + distancia1 + " cm";
@@ -17,6 +18,11 @@ window.electron.onSerialData((event, data) => {
     if (distanciaCalculada !== undefined) {
       document.getElementById("distanciaCalculada").innerText = "Distância Média: " + distanciaCalculada + " cm";
     }
+
+    if (serialData) {
+      serialData.style.display = "none";
+    }
+
   } catch (error) {
     console.error("Erro ao processar os dados:", error);
   }

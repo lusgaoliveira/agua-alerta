@@ -34,7 +34,7 @@ app.whenReady().then(() => {
 
   mainWindow.loadFile("index.html");
 
-  Menu.setApplicationMenu(null);
+  // Menu.setApplicationMenu(null);
 
   parser.on("data", (data) => {
     console.log("Recebido:", data.trim());
