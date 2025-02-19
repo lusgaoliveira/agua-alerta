@@ -7,7 +7,7 @@ window.electron.onSerialData((event, data) => {
     const distancia1 = jsonData.distancia1;
     const distancia2 = jsonData.distancia2;
     const distanciaCalculada = jsonData.distanciaCalculada;
-    const serialData = document.getElementById("serialData"); // Elemento da mensagem
+    const serialData = document.getElementById("serialData");
 
     if (distancia1 !== undefined) {
       document.getElementById("distancia1").innerText = "Distância Sensor 1: " + distancia1 + " cm";

@@ -34,7 +34,7 @@ app.whenReady().then(() => {
 
   mainWindow.loadFile("index.html");
 
-  // Menu.setApplicationMenu(null);
+  Menu.setApplicationMenu(Menu.buildFromTemplate(template));
 
   parser.on("data", (data) => {
     console.log("Recebido:", data.trim());
@@ -47,3 +47,12 @@ app.whenReady().then(() => {
 app.on("window-all-closed", () => {
   app.quit();
 });
+
+const template = [
+  {
+    label: "Cadastrar"
+  },
+  {
+    label: "Listar"
+  },
+]
