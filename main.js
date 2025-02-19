@@ -1,58 +1,105 @@
-const { app, BrowserWindow, Menu } = require("electron");
+const { app, BrowserWindow, Menu, ipcMain } = require("electron");
 const { SerialPort } = require("serialport");
 const { ReadlineParser } = require("@serialport/parser-readline");
+const CitizenRepository = require('./src/repositories/citizenRepository');
 
 let mainWindow;
+let registerWindow;
 
-const port = new SerialPort(
-  {
-    // Porta serial do arduíno no linux, windows são os comp
-    path: "/dev/ttyUSB0",
-    baudRate: 9600,
-  },
-  (err) => {
+// Configuração da porta serial (ajuste para Windows, se necessário)
+const port = new SerialPort({ path: "/dev/ttyUSB0", baudRate: 9600 }, (err) => {
     if (err) {
-      console.error("Erro ao abrir a porta serial:", err.message);
+        console.error("Erro ao abrir a porta serial:", err.message);
     } else {
-      console.log("Porta serial aberta com sucesso!");
+        console.log("Porta serial aberta com sucesso!");
     }
-  }
-);
+});
 
 const parser = port.pipe(new ReadlineParser({ delimiter: "\n" }));
 
+// Função para criar a janela principal
 app.whenReady().then(() => {
-  mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
-    webPreferences: {
-      preload: __dirname + "/preload.js", 
-      contextIsolation: true,
-      enableRemoteModule: false,
+    mainWindow = new BrowserWindow({
+        width: 800,
+        height: 600,
+        webPreferences: {
+            preload: __dirname + "/preload.js", // Conexão segura com renderer
+            contextIsolation: true,
+        },
+    });
+
+    mainWindow.loadFile("./src/views/index.html");
+    Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplate));
+
+    parser.on("data", (data) => {
+        console.log("Recebido:", data.trim());
+        if (mainWindow) {
+            mainWindow.webContents.send("serial-data", data.trim());
+        }
+    });
+
+    port.on("error", (err) => console.error("Erro na porta serial:", err.message));
+});
+
+// Criação da janela de cadastro
+const janelaCadastro = () => {
+    let registerWindow = new BrowserWindow({
+        width: 640,
+        height: 480,
+        autoHideMenuBar: true,
+        resizable: false,
+        parent: mainWindow,
+        modal: true,
+        webPreferences: {
+            preload: __dirname + "/preload.js",
+            contextIsolation: true,
+        },
+    });
+    registerWindow.loadFile("./src/views/register/register.html");
+
+    registerWindow.on("closed", () => {
+      registerWindow = null;
+  });
+};
+
+// Menu da aplicação
+const menuTemplate = [
+    {
+        label: "Cadastrar",
+        click: () => janelaCadastro(),
     },
-  });
+    {
+        label: "Listar",
+    },
+    {
+        label: "Exibir",
+        submenu: [
+            { label: "Recarregar", role: "reload" },
+            { label: "Ferramentas do desenvolvedor", role: "toggleDevTools" },
+        ],
+    },
+];
 
-  mainWindow.loadFile("index.html");
+// Captura evento do cadastro
+ipcMain.on("save-citizen", async (event, formData) => {
+  try {
+      console.log("Novo cidadão cadastrado:", formData);
 
-  Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+      const savedCitizen = await CitizenRepository.save(formData);
+      console.log("Cidadão salvo no banco:", savedCitizen); 
+      event.reply("citizen-saved", savedCitizen); 
 
-  parser.on("data", (data) => {
-    console.log("Recebido:", data.trim());
-    mainWindow.webContents.send("serial-data", data.trim()); //Dados que serão enviados para renderização
-  });
 
-  port.on("error", (err) => console.error("Erro na porta serial:", err.message));
+      if (registerWindow) {
+        console.log("Fechando a janela de cadastro...");
+        registerWindow.close();
+      }
+  } catch (error) {
+      console.error("Erro ao salvar cidadão:", error.message);
+      event.reply("citizen-save-error", error.message);
+  }
 });
 
 app.on("window-all-closed", () => {
-  app.quit();
+    app.quit();
 });
-
-const template = [
-  {
-    label: "Cadastrar"
-  },
-  {
-    label: "Listar"
-  },
-]
