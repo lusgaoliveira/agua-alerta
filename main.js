@@ -41,9 +41,10 @@ app.whenReady().then(() => {
     port.on("error", (err) => console.error("Erro na porta serial:", err.message));
 });
 
-// Criação da janela de cadastro
 const janelaCadastro = () => {
-    let registerWindow = new BrowserWindow({
+    if (registerWindow) return;  
+
+    registerWindow = new BrowserWindow({
         width: 640,
         height: 480,
         autoHideMenuBar: true,
@@ -55,12 +56,43 @@ const janelaCadastro = () => {
             contextIsolation: true,
         },
     });
+
     registerWindow.loadFile("./src/views/register/register.html");
 
     registerWindow.on("closed", () => {
-      registerWindow = null;
-  });
+        registerWindow = null; 
+    });
 };
+
+// Evento para salvar cidadão e fechar janela
+ipcMain.on("save-citizen", async (event, formData) => {
+    try {
+        console.log("Novo cidadão cadastrado:", formData);
+        const savedCitizen = await CitizenRepository.save(formData);
+        console.log("Cidadão salvo no banco:", savedCitizen);
+        event.reply("citizen-saved", savedCitizen);
+
+        if (registerWindow) {
+            console.log("Fechando a janela de cadastro...");
+            registerWindow.close();
+            registerWindow = null;  // ✅ Evita referências inválidas
+        }
+    } catch (error) {
+        console.error("Erro ao salvar cidadão:", error.message);
+        event.reply("citizen-save-error", error.message);
+    }
+});
+
+// Evento separado para fechar a janela
+ipcMain.on("close-register-window", () => {
+    if (registerWindow) {
+        console.log("Fechando janela de cadastro...");
+        registerWindow.close();
+        registerWindow = null;
+    }
+});
+
+
 
 // Menu da aplicação
 const menuTemplate = [
@@ -79,26 +111,6 @@ const menuTemplate = [
         ],
     },
 ];
-
-// Captura evento do cadastro
-ipcMain.on("save-citizen", async (event, formData) => {
-  try {
-      console.log("Novo cidadão cadastrado:", formData);
-
-      const savedCitizen = await CitizenRepository.save(formData);
-      console.log("Cidadão salvo no banco:", savedCitizen); 
-      event.reply("citizen-saved", savedCitizen); 
-
-
-      if (registerWindow) {
-        console.log("Fechando a janela de cadastro...");
-        registerWindow.close();
-      }
-  } catch (error) {
-      console.error("Erro ao salvar cidadão:", error.message);
-      event.reply("citizen-save-error", error.message);
-  }
-});
 
 app.on("window-all-closed", () => {
     app.quit();

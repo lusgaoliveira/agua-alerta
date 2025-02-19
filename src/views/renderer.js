@@ -35,20 +35,20 @@ window.electron.onSerialData((data) => {
 });
 
 
-document.getElementById("formulario").addEventListener("submit", function(event) {
-  event.preventDefault(); 
-  const formData = new FormData(event.target);
+  document.getElementById("citizenForm").addEventListener("submit", function(event) {
+    event.preventDefault(); 
+    const formData = new FormData(event.target);
 
-  const dadosFormulario = {};
-  formData.forEach((value, key) => {
-    dadosFormulario[key] = value; 
+    const dadosFormulario = {};
+    formData.forEach((value, key) => {
+      dadosFormulario[key] = value; 
+    });
+
+    console.log("Dados do formulário:", dadosFormulario);
   });
 
-  console.log("Dados do formulário:", dadosFormulario);
-});
 
-
-window.electron.ipcRenderer.on("citizen-saved", async() => {
-  console.log("Cidadão cadastrado com sucesso. Fechando janela...");
-  window.close();
-});
+  window.electron.ipcRenderer.on("citizen-saved", async() => {
+    console.log("Cidadão cadastrado com sucesso. Fechando janela...");
+    window.close();
+  });

@@ -9,3 +9,9 @@ document.getElementById("citizenForm").addEventListener("submit", async (event) 
 
     window.electron.send("save-citizen", formData);
 });
+
+// Escuta o evento de sucesso e pede ao `main.js` para fechar a janela
+window.electron.ipcRenderer.on("citizen-saved", () => {
+    console.log("Cidadão cadastrado com sucesso. Pedindo ao processo principal para fechar a janela.");
+    window.electron.send("close-register-window");
+});
