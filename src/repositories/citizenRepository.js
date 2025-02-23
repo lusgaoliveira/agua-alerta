@@ -27,6 +27,22 @@ class CitizenRepository {
             throw error;
         }
     }
+
+    static async listAll() {
+        const db = await connectDB();
+        try {
+            const query = `
+                SELECT * 
+                FROM citizens
+            `;
+
+            const result = await db.query(query);
+            return result.rows;
+        } catch (error) {
+            console.error("Erro ao listar cidadãos:", error);
+            throw error;
+        }
+    }
 }
 
 module.exports = CitizenRepository;

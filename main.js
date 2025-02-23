@@ -5,6 +5,7 @@ const CitizenRepository = require('./src/repositories/citizenRepository');
 
 let mainWindow;
 let registerWindow;
+let listWindow;
 
 // Configuração da porta serial (ajuste para Windows, se necessário)
 const port = new SerialPort({ path: "/dev/ttyUSB0", baudRate: 9600 }, (err) => {
@@ -23,7 +24,7 @@ app.whenReady().then(() => {
         width: 800,
         height: 600,
         webPreferences: {
-            preload: __dirname + "/preload.js", 
+            preload: __dirname + "/preload.js",
             contextIsolation: true,
         },
     });
@@ -40,6 +41,29 @@ app.whenReady().then(() => {
 
     port.on("error", (err) => console.error("Erro na porta serial:", err.message));
 });
+
+const janelaListagem = () => {
+    if (listWindow) return;
+
+    listWindow = new BrowserWindow({
+        width: 640,
+        height: 480,
+        autoHideMenuBar: true,
+        resizable: false,
+        parent: mainWindow,
+        modal: true,
+        webPreferences: {
+            preload: __dirname + "/preload.js",
+            contextIsolation: true,
+        },
+    });
+
+    listWindow.loadFile("./src/views/list/list.html");
+
+    listWindow.on("closed", () => {
+        listWindow = null;
+    });
+};
 
 const janelaCadastro = () => {
     if (registerWindow) return;  
@@ -75,7 +99,7 @@ ipcMain.on("save-citizen", async (event, formData) => {
         if (registerWindow) {
             console.log("Fechando a janela de cadastro...");
             registerWindow.close();
-            registerWindow = null;  // ✅ Evita referências inválidas
+            registerWindow = null; 
         }
     } catch (error) {
         console.error("Erro ao salvar cidadão:", error.message);
@@ -83,7 +107,6 @@ ipcMain.on("save-citizen", async (event, formData) => {
     }
 });
 
-// Evento separado para fechar a janela
 ipcMain.on("close-register-window", () => {
     if (registerWindow) {
         console.log("Fechando janela de cadastro...");
@@ -92,7 +115,24 @@ ipcMain.on("close-register-window", () => {
     }
 });
 
+ipcMain.on("list-citizens", async (event) => {
+    try {
+        const citizens = await CitizenRepository.listAll();
+        console.log("Cidadãos recebidos:", citizens);
 
+        if (listWindow) {
+            // Aguarda a janela estar completamente carregada antes de enviar os dados
+            listWindow.webContents.on("did-finish-load", () => {
+                listWindow.webContents.send("citizens-list", citizens);
+            });
+        } else {
+            console.error("Janela de listagem não encontrada.");
+        }
+    } catch (error) {
+        console.error("Erro ao listar cidadãos:", error.message);
+        event.reply("citizens-list-error", error.message);
+    }
+});
 
 // Menu da aplicação
 const menuTemplate = [
@@ -102,6 +142,11 @@ const menuTemplate = [
     },
     {
         label: "Listar",
+        click: () => {
+            janelaListagem();
+            // Aqui, chamamos diretamente a função de listagem
+            ipcMain.emit("list-citizens", { }); 
+        }
     },
     {
         label: "Exibir",

@@ -60,20 +60,58 @@ window.electron.onSerialData((data) => {
 });
 
 
-document.getElementById("citizenForm").addEventListener("submit", function(event) {
-  event.preventDefault(); 
-  const formData = new FormData(event.target);
+document.addEventListener("DOMContentLoaded", function() {
+  const citizenForm = document.getElementById("citizenForm");
 
-  const dadosFormulario = {};
-  formData.forEach((value, key) => {
-    dadosFormulario[key] = value; 
-  });
+  if (citizenForm) {
+      citizenForm.addEventListener("submit", function(event) {
+          event.preventDefault(); 
+          const formData = new FormData(event.target);
 
-  console.log("Dados do formulário:", dadosFormulario);
+          const dadosFormulario = {};
+          formData.forEach((value, key) => {
+              dadosFormulario[key] = value; 
+          });
+
+          console.log("Dados do formulário:", dadosFormulario);
+      });
+  } else {
+      console.error("Elemento 'citizenForm' não encontrado!");
+  }
 });
 
-
-window.electron.ipcRenderer.on("citizen-saved", async() => {
+// Escuta o evento "citizen-saved" para fechar a janela após o cadastro
+window.electron.on("citizen-saved", async () => {
   console.log("Cidadão cadastrado com sucesso. Fechando janela...");
   window.close();
+});
+
+// Aguarda o carregamento completo do DOM antes de manipular elementos. Sem carregar antes não carrega
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("DOM carregado, ouvindo eventos...");
+
+  // Escuta o evento "citizens-list" para receber a lista de cidadãos
+  window.electron.on("citizens-list", (citizens) => {
+      console.log("Cidadãos recebidos:", citizens);
+
+      const citizenListElem = document.getElementById("citizen-list");
+      if (citizenListElem) {
+          citizenListElem.innerHTML = "";
+
+          // Cria uma lista de cidadãos
+          citizens.forEach(citizen => {
+              const listItem = document.createElement("li");
+              listItem.textContent = `Nome: ${citizen.name}, Email: ${citizen.email}, Telefone: ${citizen.phone_number}`;
+              citizenListElem.appendChild(listItem);
+          });
+      } else {
+          console.error("Elemento 'citizen-list' não encontrado no DOM.");
+      }
+  });
+
+  // Escuta o evento de erro, caso ocorra ao tentar listar os cidadãos
+  window.electron.on("citizens-list-error", (errorMessage) => {
+      console.error("Erro ao listar cidadãos:", errorMessage);
+      alert("Erro ao listar cidadãos: " + errorMessage);
+  });
 });
