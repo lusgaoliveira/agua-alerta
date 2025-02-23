@@ -1,5 +1,6 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
+// Canal de comunicação do main process para o renderer
 contextBridge.exposeInMainWorld("electron", {
-    receiveSerialData: (callback) => ipcRenderer.on("serial-data", (event, data) => callback(data)),
+  onSerialData: (callback) => ipcRenderer.on("serial-data", callback), 
 });

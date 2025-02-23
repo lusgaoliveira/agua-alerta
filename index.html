@@ -1,90 +1,20 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Agua Alerta</title>
+  </head>
+  <body>
+    <h1>Dados do Arduino</h1>
+    <p id="distancia1">Distância Sensor 1: </p>
+    <p id="distancia2">Distância Sensor 2: </p>
+    <p id="distanciaCalculada">Distância Média: </p>
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Água Alerta</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
-</head>
-
-<body class="bg-blue-100 flex flex-col items-center justify-center h-screen">
-    <h1 class="text-3xl font-bold text-gray-800 mb-4">Monitoramento do Nível de Água</h1>
-    
-    <div class="relative w-40 h-64 bg-gray-300 rounded-lg overflow-hidden border-4 border-gray-500">
-        <div id="water" class="absolute bottom-0 w-full bg-blue-500 transition-all"></div>
+    <div>
+      <p id="serialData">Aguardando dados...</p>
     </div>
-    
-    <p class="mt-4 text-lg">Nível: <span id="nivel">0</span>%</p>
-    
-    <h2 class="text-2xl font-bold text-gray-800 mt-6">Cadastro de Cidadão</h2>
-    <form id="citizenForm" class="bg-white p-4 shadow-md rounded-md mt-4 w-80">
-        <label class="block mb-2">Nome:</label>
-        <input type="text" id="name" class="w-full p-2 border rounded-md mb-2" required>
-        
-        <label class="block mb-2">E-mail:</label>
-        <input type="email" id="email" class="w-full p-2 border rounded-md mb-2" required>
-        
-        <label class="block mb-2">Telefone:</label>
-        <input type="tel" id="phone" class="w-full p-2 border rounded-md mb-4" required>
-        
-        <button type="submit" class="w-full bg-blue-500 text-white p-2 rounded-md">Cadastrar</button>
-    </form>
-    
-    <script>
-        document.getElementById("citizenForm").addEventListener("submit", async (event) => {
-            event.preventDefault();
-            
-            const name = document.getElementById("name").value;
-            const email = document.getElementById("email").value;
-            const phone = document.getElementById("phone").value;
 
-            try {
-                const response = await fetch("http://localhost:3000/api/citizens", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({ name, email, phone_number: phone })
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    alert(data.message);
-                    document.getElementById("citizenForm").reset();
-                } else {
-                    const errorData = await response.json();
-                    alert("Erro ao cadastrar cidadão: " + errorData.message);
-                }
-            } catch (error) {
-                console.error("Erro ao enviar a requisição:", error);
-                alert("Erro ao cadastrar cidadão.");
-            }
-        });
-
-        // Aqui continua o seu código para o sensor
-        const { ipcRenderer } = require("electron");
-
-        ipcRenderer.on("serial-data", (event, data) => {
-            try {
-                const jsonData = JSON.parse(data);
-                const nivel = jsonData.distanciaCalculada || 0;
-                
-                const porcentagem = Math.max(0, Math.min(100, 100 - nivel)); // Ajusta a escala
-                document.getElementById("nivel").innerText = porcentagem;
-                
-                anime({
-                    targets: "#water",
-                    height: `${porcentagem}%`,
-                    easing: "easeInOutQuad",
-                    duration: 1000
-                });
-            } catch (error) {
-                console.error("Erro ao processar os dados:", error);
-            }
-        });
-    </script>
-</body>
-
+    <script src="renderer.js"></script> 
+  </body>
 </html>
