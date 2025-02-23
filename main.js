@@ -23,7 +23,7 @@ app.whenReady().then(() => {
         width: 800,
         height: 600,
         webPreferences: {
-            preload: __dirname + "/preload.js", // Conexão segura com renderer
+            preload: __dirname + "/preload.js", 
             contextIsolation: true,
         },
     });
