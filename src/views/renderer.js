@@ -1,3 +1,5 @@
+let emailSent = false; 
+
 window.electron.onSerialData((data) => {
   console.log("Dados recebidos:", data);
 
@@ -12,7 +14,6 @@ window.electron.onSerialData((data) => {
   } catch (error) {
     // Caso não seja JSON, tenta extrair os dados do texto
     console.warn("Dados em formato de texto detectados. Extraindo informações...");
-
     if (/Sensor 1/.test(data)) {
       distancia1 = parseInt(data.match(/\d+/)[0], 10);
     } else if (/Sensor 2/.test(data)) {
@@ -45,7 +46,7 @@ window.electron.onSerialData((data) => {
     serialData.style.display = "none";
   }
 
-  // Animação do nível de água com base na distância calculada
+  // Lógica de animação do nível de água com base na distância calculada
   if (nivelElem && waterElem && distanciaCalculada !== undefined) {
     const porcentagem = Math.max(0, Math.min(100, 100 - distanciaCalculada)); // Converte a distância em nível de água
     nivelElem.innerText = porcentagem;
@@ -56,6 +57,25 @@ window.electron.onSerialData((data) => {
       easing: "easeInOutQuad",
       duration: 1000
     });
+
+    if (porcentagem === 80 && !emailSent) {
+      console.log("Nível de água atingiu 80%. Enviando e-mail...");
+      emailSent = true; // Evita que o e-mail seja enviado múltiplas vezes
+  
+      // Envia o e-mail de forma assíncrona
+      (async () => {
+          try {
+              console.log("Chamando sendEmailToAllUsers...");
+              await sendEmailToAllUsers({
+                  subject: "Alerta de Nível de Água",
+                  body: "O nível de água atingiu 80%. Favor verificar o sistema."
+              });
+              console.log("E-mail enviado com sucesso!");
+          } catch (error) {
+              console.error("Erro ao enviar o e-mail:", error);
+          }
+      })();
+    }
   }
 });
 

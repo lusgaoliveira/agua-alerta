@@ -2,6 +2,7 @@ const { app, BrowserWindow, Menu, ipcMain } = require("electron");
 const { SerialPort } = require("serialport");
 const { ReadlineParser } = require("@serialport/parser-readline");
 const CitizenRepository = require('./src/repositories/citizenRepository');
+const { sendEmailToAllUsers } = require("./src/services/email");
 
 let mainWindow;
 let registerWindow;
@@ -33,8 +34,10 @@ app.whenReady().then(() => {
     Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplate));
 
     parser.on("data", (data) => {
-        console.log("Recebido:", data.trim());
-        if (mainWindow) {
+        console.log("Dados recebidos do Arduino:", data.trim());
+    
+        // Certifique-se de que a janela principal está aberta antes de enviar os dados
+        if (mainWindow && !mainWindow.isDestroyed()) {
             mainWindow.webContents.send("serial-data", data.trim());
         }
     });
@@ -66,7 +69,7 @@ const janelaListagem = () => {
 };
 
 const janelaCadastro = () => {
-    if (registerWindow) return;  
+    if (registerWindow) return;
 
     registerWindow = new BrowserWindow({
         width: 640,
@@ -84,7 +87,7 @@ const janelaCadastro = () => {
     registerWindow.loadFile("./src/views/register/register.html");
 
     registerWindow.on("closed", () => {
-        registerWindow = null; 
+        registerWindow = null;
     });
 };
 
@@ -99,7 +102,7 @@ ipcMain.on("save-citizen", async (event, formData) => {
         if (registerWindow) {
             console.log("Fechando a janela de cadastro...");
             registerWindow.close();
-            registerWindow = null; 
+            registerWindow = null;
         }
     } catch (error) {
         console.error("Erro ao salvar cidadão:", error.message);
@@ -108,7 +111,7 @@ ipcMain.on("save-citizen", async (event, formData) => {
 });
 
 ipcMain.on("close-register-window", () => {
-    if (registerWindow) {
+    if (registerWindow && !registerWindow.isDestroyed()) {
         console.log("Fechando janela de cadastro...");
         registerWindow.close();
         registerWindow = null;
@@ -121,8 +124,8 @@ ipcMain.on("list-citizens", async (event) => {
         console.log("Cidadãos recebidos:", citizens);
 
         if (listWindow) {
-            // Aguarda a janela estar completamente carregada antes de enviar os dados
             listWindow.webContents.on("did-finish-load", () => {
+                console.log("Enviando lista de cidadãos para a janela de listagem...");
                 listWindow.webContents.send("citizens-list", citizens);
             });
         } else {
@@ -134,6 +137,32 @@ ipcMain.on("list-citizens", async (event) => {
     }
 });
 
+const listCitizens = async () => {
+    try {
+        const citizens = await CitizenRepository.listAll();
+        console.log("Cidadãos recebidos:", citizens);
+
+        if (listWindow) {
+            listWindow.webContents.on("did-finish-load", () => {
+                console.log("Enviando lista de cidadãos para a janela de listagem...");
+                listWindow.webContents.send("citizens-list", citizens);
+            });
+        } else {
+            console.error("Janela de listagem não encontrada.");
+        }
+    } catch (error) {
+        console.error("Erro ao listar cidadãos:", error.message);
+    }
+};
+
+ipcMain.on("send-email-alert", async (event, content) => {
+    try {
+      await sendEmailToAllUsers(content);
+      console.log("E-mail de alerta enviado para todos os cidadãos.");
+    } catch (error) {
+      console.error("Erro ao enviar e-mail de alerta:", error);
+    }
+  });
 // Menu da aplicação
 const menuTemplate = [
     {
@@ -144,8 +173,7 @@ const menuTemplate = [
         label: "Listar",
         click: () => {
             janelaListagem();
-            // Aqui, chamamos diretamente a função de listagem
-            ipcMain.emit("list-citizens", { }); 
+            listCitizens();
         }
     },
     {
