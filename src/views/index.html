@@ -4,27 +4,30 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Água Alerta</title>
-  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
 </head>
-<body>
-  <h1>Monitoramento do Nível de Água</h1>
+<body class="bg-blue-100 flex flex-col items-center justify-center h-screen">
+  <h1 class="text-3xl font-bold text-gray-800 mb-4">Monitoramento do Nível de Água</h1>
 
   <!-- Exibir dados dos sensores -->
   <div>
-    <p id="distancia1">Distância Sensor 1: <strong>Aguardando...</strong></p>
-    <p id="distancia2">Distância Sensor 2: <strong>Aguardando...</strong></p>
-    <p id="distanciaCalculada">Distância Média: <strong>Aguardando...</strong></p>
+    <p id="distancia1" class="text-lg">Distância Sensor 1: <strong>Aguardando...</strong></p>
+    <p id="distancia2" class="text-lg">Distância Sensor 2: <strong>Aguardando...</strong></p>
+    <p id="distanciaCalculada" class="text-lg">Distância Média: <strong>Aguardando...</strong></p>
   </div>
- 
-  <!-- Animação do nível de água -->
-  <div class="water-container">
-    <div id="water"></div>
-  </div>
-
-  <p>Nível: <span id="nivel">0</span>%</p>
-
-  <p id="serialData">Aguardando dados...</p>
   
+  <!-- Animação do nível de água -->
+  <div class="relative w-40 h-64 bg-gray-300 rounded-lg overflow-hidden border-4 border-gray-500 mt-4">
+    <div id="water" class="absolute bottom-0 w-full bg-blue-500 transition-all"></div>
+  </div>
+
+  <p class="mt-4 text-lg">Nível: <span id="nivel">0</span>%</p>
+
+  <div>
+    <p id="serialData">Aguardando dados...</p>
+  </div>
+
   <script src="./renderer.js"></script>
 </body>
 </html>
