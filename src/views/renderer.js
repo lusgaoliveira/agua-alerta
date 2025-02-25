@@ -58,23 +58,11 @@ window.electron.onSerialData((data) => {
       duration: 1000
     });
 
-    if (porcentagem === 80 && !emailSent) {
-      console.log("Nível de água atingiu 80%. Enviando e-mail...");
-      emailSent = true; // Evita que o e-mail seja enviado múltiplas vezes
-  
-      // Envia o e-mail de forma assíncrona
-      (async () => {
-          try {
-              console.log("Chamando sendEmailToAllUsers...");
-              await sendEmailToAllUsers({
-                  subject: "Alerta de Nível de Água",
-                  body: "O nível de água atingiu 80%. Favor verificar o sistema."
-              });
-              console.log("E-mail enviado com sucesso!");
-          } catch (error) {
-              console.error("Erro ao enviar o e-mail:", error);
-          }
-      })();
+    if (porcentagem >= 80 && !emailSent) {
+        console.log("Nível da água atingiu 80%. Enviando e-mail...");
+        emailSent = true;
+
+        window.electron.send("send-email-alert");
     }
   }
 });

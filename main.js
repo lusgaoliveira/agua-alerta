@@ -137,6 +137,16 @@ ipcMain.on("list-citizens", async (event) => {
     }
 });
 
+ipcMain.on("send-email-alert", async () => {
+    console.log("Recebido evento do renderer. Enviando e-mails...");
+    try {
+        await sendEmailToAllUsers("O nível de água atingiu 80%. Favor verificar o sistema.");
+        console.log("E-mails enviados com sucesso!");
+    } catch (error) {
+        console.error("Erro ao enviar e-mails:", error);
+    }
+});
+
 const listCitizens = async () => {
     try {
         const citizens = await CitizenRepository.listAll();
@@ -155,14 +165,6 @@ const listCitizens = async () => {
     }
 };
 
-ipcMain.on("send-email-alert", async (event, content) => {
-    try {
-      await sendEmailToAllUsers(content);
-      console.log("E-mail de alerta enviado para todos os cidadãos.");
-    } catch (error) {
-      console.error("Erro ao enviar e-mail de alerta:", error);
-    }
-  });
 // Menu da aplicação
 const menuTemplate = [
     {
