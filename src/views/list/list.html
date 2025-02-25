@@ -3,12 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Listar Cidadãos</title>
+    <title>Lista de Cidadãos</title>
+    <link rel="stylesheet" href="styles.css"> <!-- Adiciona o CSS externo -->
 </head>
 <body>
-    <h1>Lista de Cidadãos</h1>
-    <ul id="citizen-list"></ul> <!-- Elemento para exibir a lista -->
-    <button onclick="window.close()">Fechar</button>
+    <div class="container">
+        <h1>Lista de Cidadãos</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Email</th>
+                    <th>Telefone</th>
+                </tr>
+            </thead>
+            <tbody id="citizen-list">
+                <!-- Os cidadãos serão inseridos aqui pelo JavaScript -->
+            </tbody>
+        </table>
+        <button class="close-btn" onclick="window.close()">Fechar</button>
+    </div>
     <script src="../renderer.js"></script> <!-- Carrega o script renderer.js -->
 </body>
 </html>
