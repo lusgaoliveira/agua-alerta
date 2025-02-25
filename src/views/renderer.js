@@ -116,13 +116,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const citizenListElem = document.getElementById("citizen-list");
       if (citizenListElem) {
-          citizenListElem.innerHTML = "";
+          citizenListElem.innerHTML = ""; // Limpa a tabela antes de adicionar os novos dados
 
-          // Cria uma lista de cidadãos
+          // Cria uma linha de tabela para cada cidadão
           citizens.forEach(citizen => {
-              const listItem = document.createElement("li");
-              listItem.textContent = `Nome: ${citizen.name}, Email: ${citizen.email}, Telefone: ${citizen.phone_number}`;
-              citizenListElem.appendChild(listItem);
+              const row = document.createElement("tr"); // Cria uma nova linha de tabela
+
+              // Cria células para cada dado do cidadão
+              const nameCell = document.createElement("td");
+              nameCell.textContent = citizen.name;
+              row.appendChild(nameCell);
+
+              const emailCell = document.createElement("td");
+              emailCell.textContent = citizen.email;
+              row.appendChild(emailCell);
+
+              const phoneCell = document.createElement("td");
+              phoneCell.textContent = citizen.phone_number;
+              row.appendChild(phoneCell);
+
+              // Adiciona a linha à tabela
+              citizenListElem.appendChild(row);
           });
       } else {
           console.error("Elemento 'citizen-list' não encontrado no DOM.");
